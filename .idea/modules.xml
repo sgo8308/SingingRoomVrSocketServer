@@ -2,7 +2,9 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/SingingRoomVrChatServer.iml" filepath="$PROJECT_DIR$/SingingRoomVrChatServer.iml" />
+      <module fileurl="file://$PROJECT_DIR$/SelecetorChatProgram/SelecetorChatProgram.iml" filepath="$PROJECT_DIR$/SelecetorChatProgram/SelecetorChatProgram.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Server/Server.iml" filepath="$PROJECT_DIR$/Server/Server.iml" />
+      <module fileurl="file://$PROJECT_DIR$/ServerCore/ServerCore.iml" filepath="$PROJECT_DIR$/ServerCore/ServerCore.iml" />
     </modules>
   </component>
 </project>
