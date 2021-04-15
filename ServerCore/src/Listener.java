@@ -10,6 +10,7 @@ public class Listener {
     AsynchronousServerSocketChannel serverSocketChannel;
     SessionFactory _sessionFactory;
     public void Init(SessionFactory sessionFactory){
+        System.out.println("Listener Init Enter");
         try{
             channelGroup = AsynchronousChannelGroup.withFixedThreadPool(
                     Runtime.getRuntime().availableProcessors(),
@@ -25,8 +26,9 @@ public class Listener {
         RegisterAccept();
     }
 
-    void RegisterAccept()
+    void RegisterAccept() // 낚시대를 던짐
     {
+        System.out.println("Listener RegisterAccept Enter");
         serverSocketChannel.accept(null ,
                 new   CompletionHandler<AsynchronousSocketChannel, Void>() {
                     @Override
@@ -42,7 +44,8 @@ public class Listener {
                 }  );
     }
 
-    void OnAcceptCompleted(AsynchronousSocketChannel socketChannel){
+    void OnAcceptCompleted(AsynchronousSocketChannel socketChannel){ // accept이 성공적으로 완료됐을 때 콜백함수
+        System.out.println("Listener OnAcceptCompleted Enter");
         try{
             System.out.println("연결 수락 : " + socketChannel.getRemoteAddress());
             Session session = _sessionFactory.Build();

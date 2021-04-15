@@ -1,4 +1,5 @@
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
 class SendBufferHelper//
 {
@@ -14,7 +15,7 @@ class SendBufferHelper//
         if (CurrentBuffer.get().GetFreeSize() < reserveSize) // 여유공간보다 send하려는 크기가 크면 버퍼를 새로 만든다.
         CurrentBuffer.set(new SendBuffer(ChunkSize));
 
-        return CurrentBuffer.get().GetSendBuff(reserveSize);
+        return CurrentBuffer.get().Open(reserveSize);
     }
 
     public static ByteBuffer Close(int usedSize)
@@ -37,6 +38,7 @@ public class SendBuffer // 데이터를 하나만  보내는게 아니라 여러
     public SendBuffer(int chunkSize)
     {
         _buffer = ByteBuffer.allocate(chunkSize);
+        _buffer.order(ByteOrder.LITTLE_ENDIAN);// c#과 통신하기 위해서 LITTLE_ENDIAN으로 바꿔줌
     }
     //이 open close 방식 쓰면 데이터 send 할 때 flip 할 필요 없음.
     public ByteBuffer Open(int reserveSize){ // open과 close 안에 send할 데이터를 담아줌
@@ -50,12 +52,5 @@ public class SendBuffer // 데이터를 하나만  보내는게 아니라 여러
         ByteBuffer segment = _buffer.wrap(_buffer.array(),_usedSize, usedSize); // _buffer로부터 _usedSize position부터 usedSize뒤에 limit를 만들어서 이 사이에 있는 데이터만 보내게 함.
         _usedSize += usedSize;
         return segment;
-    }
-
-    public ByteBuffer GetSendBuff(int reserveSize){
-        if (reserveSize > GetFreeSize())
-            return null;
-
-        return _buffer;
     }
 }
