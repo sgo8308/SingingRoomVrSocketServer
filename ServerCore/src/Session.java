@@ -3,14 +3,13 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.nio.channels.CompletionHandler;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.concurrent.TimeUnit;
 
 abstract class PacketSession extends Session{
     public static int HeaderSize = 2;
-
-    OperatorManager op = new OperatorManager();
     // [size(2)][packetId(2)][ ... ][size(2)][packetId(2)][ ... ]
 
     @Override
@@ -71,15 +70,17 @@ public abstract class Session {
         RegisterReceive();
     }
 
+    public static int bp = 0;
     public synchronized void Send(ByteBuffer sendBuff){// 컨텐츠단에서는 이 send만 사용
+        bp ++;
         System.out.println("Session Send Enter");
+        System.out.println("current thread = " + Thread.currentThread().getName() + "position : " + sendBuff.position() + "  limit : " + sendBuff.limit());
+//        System.out.println("array is " + Arrays.toString(sendBuff.array()));
         _sendQueue.add(sendBuff);
         if(!_isPending){
             RegisterSend();
         }
     }
-
-
 
     //region 네트워크 통신 부분 (컨텐츠단에서는 여기 메소드를 쓸 일 없음)
     void RegisterSend(){
@@ -112,6 +113,14 @@ public abstract class Session {
 
     synchronized void OnSendCompleted(Long bytesTransferred){
         System.out.println("Session OnSendCompleted Enter");
+        String sss = "0";
+        try{
+            sss = socketChannel.getRemoteAddress().toString();
+        }catch(Exception e){
+          e.printStackTrace();
+        }
+        System.out.println("전송한 데이터의 길이 : " + bytesTransferred + "현재 소켓 번호 :" + sss);
+        System.out.println("send 한번 하고 나서 포지션은 " + _pendingList[0].position());
         if(bytesTransferred > 0){
             try
             {
@@ -128,8 +137,10 @@ public abstract class Session {
                 System.out.println("OnSendCompleted Failed : " + e);
             }
         }else{
-            Disconnect();
+            Disconnect(new Object() {}.getClass().getEnclosingMethod().getName());
         }
+        System.out.println("Session OnSendCompleted Exit");
+
     }
 
     void RegisterReceive(){
@@ -168,7 +179,7 @@ public abstract class Session {
                 int processLen = OnRecv(receiveBuff.GetReadSegment());
                 if (processLen < 0)
                 {
-                    Disconnect();
+                    Disconnect(new Object() {}.getClass().getEnclosingMethod().getName());
                     return;
                 }
 
@@ -189,12 +200,12 @@ public abstract class Session {
         }
         else
         {
-            Disconnect();
+            Disconnect( new Object() {}.getClass().getEnclosingMethod().getName());
         }
     }
 
-    public void Disconnect(){
-        System.out.println("Session Disconnect Enter, thread is : "+ Thread.currentThread().getName());
+    public void Disconnect(String method){
+        System.out.println("Session Disconnect Enter, thread is : "+ Thread.currentThread().getName() + "method :" + method);
 
         synchronized(this){ // 혹시나 쓰레드가 소켓을 두 번 닫으면 안되니까 동기화
             if(disconnected == 1){
