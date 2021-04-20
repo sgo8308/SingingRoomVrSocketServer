@@ -1,4 +1,10 @@
 import java.util.HashMap;
+import java.util.List;
+
+/*
+* 모든 세션을 관리하는 클래스
+* 모두에게 메시지를 보내야할 때 이 매니저를 참고한다.
+*/
 
 public class SessionManager {
     static SessionManager _session = new SessionManager();
@@ -7,7 +13,8 @@ public class SessionManager {
 
     int _sessionId = 0;
 
-    HashMap<Integer, ClientSession> _sessions = new HashMap<>();
+    HashMap<Integer, ClientSession> _allSessions = new HashMap<>();
+    HashMap<Integer, List<ClientSession>> _sessionsByroom = new HashMap<>();
 
     public synchronized ClientSession Generate()
     {
@@ -15,7 +22,7 @@ public class SessionManager {
 
         ClientSession session = new ClientSession();
         session.SessionId = sessionId;
-        _sessions.put(sessionId, session);
+        _allSessions.put(sessionId, session);
 
         System.out.println("Connected : " + sessionId);
 
@@ -25,13 +32,13 @@ public class SessionManager {
 
     public synchronized ClientSession Find(int id)
     {
-        ClientSession session = _sessions.get(id);
+        ClientSession session = _allSessions.get(id);
         return session;
     }
 
     public synchronized void Remove(ClientSession session)
     {
-        _sessions.remove(session.SessionId);
+        _allSessions.remove(session.SessionId);
     }
 
 }
