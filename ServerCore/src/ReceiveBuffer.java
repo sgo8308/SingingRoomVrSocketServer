@@ -47,7 +47,6 @@ public class ReceiveBuffer {
     }
 
     public ByteBuffer GetReadSegment(){// 현재까지 받은 데이터의 유효 범위의 position과 limit를 갖고 있는 버퍼를 리턴
-
         return _buffer.wrap(_buffer.array(), _buffer.arrayOffset() + _readPos, getDataSize());
     }
 

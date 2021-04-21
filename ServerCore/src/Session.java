@@ -18,31 +18,42 @@ abstract class PacketSession extends Session{
         int processLen = 0;
         int limitPosition;
         int position ;
+        int count = 0;
         while (true)
         {
+            count++;
             position = buffer.position();
             limitPosition = buffer.limit();
+
+            System.out.println("OnRecv에서 현재 회수 : " + count + "buffer의 size는 : " + buffer.remaining());
 
             // 최소한 헤더는 파싱할 수 있는지 확인
             if (buffer.remaining() < HeaderSize)
                 break;
+            System.out.println("여기 1");
 
             // 패킷이 완전체로 도착했는지 확인
             buffer.order(ByteOrder.LITTLE_ENDIAN);
             short dataSize = buffer.getShort();
+            System.out.println("여기 2");
+
             buffer.position(position);
+            System.out.println("여기 3");
+
             if (buffer.remaining() < dataSize)
                 break;
+            System.out.println("여기 4");
 
             // 여기까지 왔으면 패킷 조립 가능
-            OnRecvPacket(buffer.wrap(buffer.array(), buffer.position(), buffer.position() + dataSize));// 여기서부터 해야 함.
+            OnRecvPacket(buffer.wrap(buffer.array(), buffer.position(), dataSize));// 여기서부터 해야 함.
+            System.out.println("여기 5");
 
             processLen += dataSize; //처리한 데이터양
 
             // 한 덩이의 패킷읽었으니까 다음 덩이의 패킷 읽을 수 있게 조정
             buffer = buffer.wrap(buffer.array(),buffer.position() + dataSize,  limitPosition - processLen);
         }
-
+        System.out.println("OnRecv Exit");
         return processLen;
     }
 
@@ -168,7 +179,6 @@ public abstract class Session {
         System.out.println("Session OnReceiveCompleted Enter");
         if (byteTransffered > 0)
         {
-            System.out.println("Session OnReceiveCompleted first if state enter");
             try
             {
                 //wirte 커서 이동
@@ -176,6 +186,7 @@ public abstract class Session {
 
                 // 컨텐츠 쪽으로 데이터를 넘겨주고 얼마나 처리했는지 받는다
                 int processLen = OnRecv(receiveBuff.GetReadSegment());
+
                 if (processLen < 0)
                 {
                     Disconnect(new Object() {}.getClass().getEnclosingMethod().getName());
@@ -184,6 +195,7 @@ public abstract class Session {
 
                 // read 커서 이동
                 receiveBuff.OnRead(processLen);
+
 //                if (receiveBuff.OnRead(processLen) == false)
 //                {
 //                    Disconnect();

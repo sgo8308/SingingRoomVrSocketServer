@@ -11,7 +11,7 @@ class SendBufferHelper
 {
     public static ThreadLocal<SendBuffer> CurrentBuffer = ThreadLocal.withInitial(() -> null);
 
-    public static int ChunkSize = 4096 * 100;
+    public static int ChunkSize = 4096;
 
     public static ByteBuffer Open(int reserveSize) {
 
@@ -41,7 +41,7 @@ public class SendBuffer
     ByteBuffer _buffer;
     int _usedSize = 0;
     public int GetFreeSize() {
-        return _buffer.capacity() - _buffer.position();
+        return _buffer.capacity() - _usedSize;
     }
 
     public SendBuffer(int chunkSize)

@@ -12,10 +12,9 @@ public class TeST {
         buffer.put((byte)4);
         buffer.put((byte)5);
 
+        buffer.rewind();
 
-        TestInterface t = () -> 3;
-        System.out.println(t.test2());
-
+        buffer.wrap(buffer.array(),3, 5);
     }
     public static void log(ByteBuffer buf)
     {

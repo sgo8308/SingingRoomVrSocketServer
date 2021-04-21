@@ -14,7 +14,7 @@ public class SessionManager {
     int _sessionId = 0;
 
     HashMap<Integer, ClientSession> _allSessions = new HashMap<>();
-    HashMap<Integer, List<ClientSession>> _sessionsByroom = new HashMap<>();
+    HashMap<Integer, List<ClientSession>> _sessionsByRoom = new HashMap<>();
 
     public synchronized ClientSession Generate()
     {
@@ -32,8 +32,7 @@ public class SessionManager {
 
     public synchronized ClientSession Find(int id)
     {
-        ClientSession session = _allSessions.get(id);
-        return session;
+        return _allSessions.get(id);
     }
 
     public synchronized void Remove(ClientSession session)
