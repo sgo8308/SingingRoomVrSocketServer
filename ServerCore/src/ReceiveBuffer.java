@@ -43,7 +43,7 @@ public class ReceiveBuffer {
     }
 
     public int getFreeSize(){ // 버퍼의 남은 여유공간
-        return _buffer.capacity() - _buffer.position();
+        return _buffer.capacity() - _writePos;
     }
 
     public ByteBuffer GetReadSegment(){// 현재까지 받은 데이터의 유효 범위의 position과 limit를 갖고 있는 버퍼를 리턴
@@ -62,9 +62,11 @@ public class ReceiveBuffer {
             _readPos = _writePos = 0;
         }else{
             _buffer.position(_readPos);
-            _buffer.limit(_writePos + 1);
+            _buffer.limit(_writePos);
             _buffer.compact();
             _buffer.clear();
+            _readPos = 0;
+            _writePos = dataSize;
         }
     }
 

@@ -16,6 +16,8 @@ public class SessionManager {
     HashMap<Integer, ClientSession> _allSessions = new HashMap<>();
     HashMap<Integer, List<ClientSession>> _sessionsByRoom = new HashMap<>();
 
+
+
     public synchronized ClientSession Generate()
     {
         int sessionId = ++_sessionId;

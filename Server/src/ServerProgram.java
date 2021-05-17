@@ -4,9 +4,10 @@ public class ServerProgram {
     public static void main(String[] args) {
         _listener.Init();
         System.out.println("Listening...");
+
         while (true)
         {
-            ;
+
         }
 
     }

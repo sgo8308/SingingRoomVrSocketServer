@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="4279383f-013d-477f-af92-f2ee4db56a21" name="SingingRoomVr">
+        <fileTransfer rootFolder="/usr/javafile/SingingRoomVrTCPServer" accessType="SFTP" host="3.34.52.86" port="22" sshConfigId="3f797583-ea34-4cfe-bdba-3b52e9bcb177" sshConfig="ubuntu@3.34.52.86:22 key" keyPair="true">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="SshConfigs">
+    <configs>
+      <sshConfig host="3.34.52.86" id="3f797583-ea34-4cfe-bdba-3b52e9bcb177" keyPath="C:\dev\key\SingingVR_WS_Password.pem" port="22" nameFormat="DESCRIPTIVE" username="ubuntu" />
+    </configs>
+  </component>
+</project>

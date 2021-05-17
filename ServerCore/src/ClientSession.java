@@ -16,6 +16,12 @@ public class ClientSession extends PacketSession { // 클라이언트의 세션�
         public static final short PlayerMove = 2;
         public static final short Players = 3;
         public static final short PlayerExit = 4;
+        public static final short MusicStart = 5;
+        public static final short MusicPause = 6;
+        public static final short MusicResume = 7;
+        public static final short RoomInfo = 8;
+        public static final short ReservedSongs = 9;
+        public static final short Voice = 10;
     }
 
     public class PlayerEnterPacket{
@@ -24,8 +30,6 @@ public class ClientSession extends PacketSession { // 클라이언트의 세션�
 
     public void OnConnected(SocketAddress socketAddress) // 연결이 되었을 때 수행할 작업
     {
-        System.out.println("OnConnected : " + socketAddress);
-
         try{
             Thread.sleep(5000);
         }catch(Exception e){
@@ -48,6 +52,7 @@ public class ClientSession extends PacketSession { // 클라이언트의 세션�
     public void OnRecvPacket(ByteBuffer buffer) // 패킷을 받았을 때 행할 작업
     {
         System.out.println("OnRecvPacket Enter");
+        int position = buffer.position();
         buffer.order(ByteOrder.LITTLE_ENDIAN); // C#으로 부터 패킷을 받았으므로 LITTLE_ENDIAN 형식으로 버퍼를 바꾸어서 패킷 안에 데이터를 받아준다.
         short size = buffer.getShort();
         short packetId = buffer.getShort();
@@ -65,6 +70,7 @@ public class ClientSession extends PacketSession { // 클라이언트의 세션�
         switch (packetId){
             case PacketID.PlayerEnter :
                 System.out.println("OnRecvPacket case PlayerEnter Enter");
+
                 if(sessionsByRoom.get(roomId) == null){
                     List<ClientSession> clientSessions = new ArrayList<>();
                     clientSessions.add(this);
@@ -72,9 +78,8 @@ public class ClientSession extends PacketSession { // 클라이언트의 세션�
                     return;
                 }
                 sessionsByRoom.get(roomId).add(this);
-                Handle_PlayerEnter(packetId, playerId, roomId, sessionsByRoom);
+                Handle_PlayerEnter(playerId, roomId, sessionsByRoom);
                 break;
-
             case PacketID.PlayerMove:
                 System.out.println("OnRecvPacket case PlayerMove Enter");
                 Handle_PlayerMove(buffer, packetId, playerId, roomId, sessionsByRoom);
@@ -82,6 +87,32 @@ public class ClientSession extends PacketSession { // 클라이언트의 세션�
 
             case PacketID.PlayerExit:
                 System.out.println("OnRecvPacket case PlayerExit Enter");
+                Handle_PlayerExit(playerId, roomId, sessionsByRoom);
+
+                break;
+            case PacketID.MusicStart:
+                System.out.println("OnRecvPacket case MusicStart Enter");
+                Handle_MusicStart(buffer, roomId, sessionsByRoom);
+
+                break;
+            case PacketID.MusicPause:
+                System.out.println("OnRecvPacket case MusicPause Enter");
+
+                break;
+            case PacketID.MusicResume:
+                System.out.println("OnRecvPacket case MusicResume Enter");
+
+                break;
+            case PacketID.RoomInfo:
+                System.out.println("OnRecvPacket case RoomInfo Enter");
+                Handle_RoomInfo(buffer, position, roomId, sessionsByRoom);
+                break;
+            case PacketID.ReservedSongs:
+                System.out.println("OnRecvPacket case ReservedSongs Enter");
+                break;
+            case PacketID.Voice:
+                System.out.println("OnRecvPacket case Voice Enter");
+                Handle_Voice(buffer, position, roomId, sessionsByRoom);
 
                 break;
             default:
@@ -99,14 +130,14 @@ public class ClientSession extends PacketSession { // 클라이언트의 세션�
     * 마지막으로 총 size를 버퍼의 맨 앞으로 넣은 후에
     * sendvufferHelper를 닫아서 패킷을 완성해준다.
     * */
-    public void Handle_PlayerEnter(short packetId, int playerId, int roomId, HashMap<Integer, List<ClientSession>> sessionsByRoom){
+    public void Handle_PlayerEnter(int playerId, int roomId, HashMap<Integer, List<ClientSession>> sessionsByRoom){
         //플레이어가 들어왔다는 데이터를 현재 접속 중인 모든 유저에게 뿌려주기
         ByteBuffer s = SendBufferHelper.Open(4096);
         s.order(ByteOrder.LITTLE_ENDIAN); // C#에 맞게 보내기 위해 Buffer Order를 변경해줌
         short size = 0;
         size += 2;
         s.position(s.position() + 2); // size 넣어줄 공간 2바이트 비워주기
-        s.putShort(packetId);
+        s.putShort(PacketID.PlayerEnter);
         size += 2;
         s.putInt(playerId);
         size += 4;
@@ -184,7 +215,6 @@ public class ClientSession extends PacketSession { // 클라이언트의 세션�
 
         //보낸 사람 빼고 뿌려주기
         ByteBuffer bf = SendBufferHelper.Open(4096);
-        System.out.println("하이 1 ");
         bf.order(ByteOrder.LITTLE_ENDIAN);
         short size = 0;
         size += 2;
@@ -193,7 +223,6 @@ public class ClientSession extends PacketSession { // 클라이언트의 세션�
         size += 2;
         bf.putInt(playerId);
         size += 4;
-        System.out.println("하이 2 ");
 
         bf.putFloat(headPosX);
         size += 4;
@@ -209,7 +238,6 @@ public class ClientSession extends PacketSession { // 클라이언트의 세션�
         size += 4;
         bf.putFloat(headRotW);
         size += 4;
-        System.out.println("하이 3 ");
 
         bf.putFloat(LHandPosX);
         size += 4;
@@ -225,7 +253,6 @@ public class ClientSession extends PacketSession { // 클라이언트의 세션�
         size += 4;
         bf.putFloat(LHandRotW);
         size += 4;
-        System.out.println("하이 4 ");
 
         bf.putFloat(RHandPosX);
         size += 4;
@@ -241,7 +268,6 @@ public class ClientSession extends PacketSession { // 클라이언트의 세션�
         size += 4;
         bf.putFloat(RHandRotW);
         size += 4;
-        System.out.println("하이 5 ");
 
         bf.putFloat(parentPosX);
         size += 4;
@@ -257,51 +283,167 @@ public class ClientSession extends PacketSession { // 클라이언트의 세션�
         size += 4;
         bf.putFloat(parentRotW);
         size += 4;
-        System.out.println("하이 6 ");
 
         bf.position(bf.position() - size); // 비워준 공간으로 포지션 떙겨서 넣기
         bf.putShort(size);
         ByteBuffer sendBuff = SendBufferHelper.Close(size);
-        System.out.println("하이 7 ");
 
         List<ClientSession> sessions = sessionsByRoom.get(roomId);
-        System.out.println("하이 8 ");
 
         for (ClientSession session : sessions ) {
             if(session.socketChannel != super.socketChannel) {
                 session.Send(sendBuff.duplicate()); // 그대로 sendbuff를 보내면 각각의 소켓이 같은 버퍼를 공유해서 포지션이나 리미트에 영향을 미침. -> 새벽에 개고생
             }
         }
-        System.out.println("하이 9 ");
-
     }
 
-    public void Handle_PlayerMoveTest(ByteBuffer buffer, short packetId){
-        int playerId = buffer.getInt();
-        int direction = buffer.getInt(); //이동하는 방향
-        System.out.println("PlayerId = "+ playerId );
-        System.out.println("direction = "+ direction );
-
-        //모두에게 뿌려주기
-        ByteBuffer bf = SendBufferHelper.Open(4096);
-        bf.order(ByteOrder.LITTLE_ENDIAN);
+    public void Handle_PlayerExit(int playerId, int roomId, HashMap<Integer, List<ClientSession>> sessionsByRoom){
+        //플레이어가 나갔다는 데이터를 현재 접속 중인 모든 유저에게 뿌려주기
+        ByteBuffer s = SendBufferHelper.Open(4096);
+        s.order(ByteOrder.LITTLE_ENDIAN); // C#에 맞게 보내기 위해 Buffer Order를 변경해줌
         short size = 0;
         size += 2;
-        bf.position(bf.position() + 2); // size 넣어줄 공간 2바이트 비워주기
-        bf.putShort(packetId);
+        s.position(s.position() + 2); // size 넣어줄 공간 2바이트 비워주기
+        s.putShort(PacketID.PlayerExit);
         size += 2;
-        bf.putInt(playerId);
+        s.putInt(playerId);
         size += 4;
-        bf.putInt(direction);
-        size += 4;
-        bf.position(bf.position() - size); // 비워준 공간으로 포지션 떙겨서 넣기
-        bf.putShort(size);
+        s.position(s.position() - size); // 비워준 공간으로 포지션 떙겨서 넣기
+        s.putShort(size);
         ByteBuffer sendBuff = SendBufferHelper.Close(size);
 
-        List<ClientSession> sessions = new ArrayList<>(SessionManager.GetInstance()._allSessions.values());
+        List<ClientSession> sessions = sessionsByRoom.get(roomId);
+
+        for (ClientSession session : sessions ) {
+            if(session.socketChannel != super.socketChannel){// 자기 자신 빼고 나머지에게 보내기
+                session.Send(sendBuff.duplicate()); // 그대로 sendbuff를 보내면 각각의 소켓이 같은 버퍼를 공유해서 포지션이나 리미트에 영향을 미침. -> 새벽에 개고생
+            }
+        }
+
+        sessions.remove(this);
+        if(sessions.size() == 0){
+            sessionsByRoom.remove(roomId);
+        }else{
+            sessionsByRoom.put(roomId,sessions);
+        }
+        Disconnect("Handle_PlayerExit");
+    }
+
+    public void Handle_MusicStart(ByteBuffer buffer ,int roomId, HashMap<Integer, List<ClientSession>> sessionsByRoom){
+        short urlLength = buffer.getShort();
+        StringBuffer url = new StringBuffer();
+        for(int i=0; i < urlLength/2; i++) { // 여기서는 실제 스트링 길이만큼 getChar하고 c#에서는 바이트의 갯수를 보내므로 2로 나누어줌. 바이트배열 길이는 스트릭길이의 두배니까
+            url.append(buffer.getChar());
+        }
+
+        System.out.println("받은 유튜뷰 videoId = " + url.toString());
+
+        //유튜브 주소 모두에게 뿌려주기
+        ByteBuffer s = SendBufferHelper.Open(4096);
+        s.order(ByteOrder.LITTLE_ENDIAN); // C#에 맞게 보내기 위해 Buffer Order를 변경해줌
+        short size = 0;
+        size += 2;
+        s.position(s.position() + 2); // size 넣어줄 공간 2바이트 비워주기
+        s.putShort(PacketID.MusicStart);
+        size += 2;
+
+        //유튜브 주소 총 길이 넣기
+        s.putShort((short)(url.length() * 2)); // 바이트 배열은 스트링 길이 2배라서 2배 했음
+        size += 2;
+        //한 글자씩 집어넣기   -> 생각해보니까 온 바이트 배열 그대로 보내주면 되는데 괜히 어렵게 했음 일단 진행
+        for(int i=0; i < url.length(); i++) {
+            s.putChar(url.charAt(i));
+            size += 2;
+        }
+
+        s.position(s.position() - size); // 비워준 공간으로 포지션 떙겨서 넣기
+        s.putShort(size);
+        ByteBuffer sendBuff = SendBufferHelper.Close(size);
+
+        List<ClientSession> sessions = sessionsByRoom.get(roomId);
 
         for (ClientSession session : sessions ) {
             session.Send(sendBuff.duplicate()); // 그대로 sendbuff를 보내면 각각의 소켓이 같은 버퍼를 공유해서 포지션이나 리미트에 영향을 미침. -> 새벽에 개고생
         }
     }
+
+    public void Handle_RoomInfo(ByteBuffer buffer ,int position,int roomId, HashMap<Integer, List<ClientSession>> sessionsByRoom){
+        int receiverId = buffer.getInt();
+//        boolean isPlaying = (buffer.get() == 1) ? true : false;
+        buffer.position(position);
+        ByteBuffer sendBuff = buffer.duplicate();
+
+        List<ClientSession> sessions = sessionsByRoom.get(roomId);
+
+        for (ClientSession session : sessions ) {
+            if(session.SessionId == receiverId){
+                session.Send(sendBuff.duplicate()); // 그대로 sendbuff를 보내면 각각의 소켓이 같은 버퍼를 공유해서 포지션이나 리미트에 영향을 미침. -> 새벽에 개고생
+            }
+        }
+    }
+
+    public void Handle_Voice(ByteBuffer buffer ,int position,int roomId, HashMap<Integer, List<ClientSession>> sessionsByRoom){
+        //송신자 빼고 브로드캐스트 해주기
+        byte[] newData = new byte[640] ;
+        for(int i=0 ; i < 640; i++) {
+            newData[i] = buffer.get();
+        }
+
+        buffer.position(position);
+        ByteBuffer sendBuff = buffer.duplicate();
+
+        List<ClientSession> sessions = sessionsByRoom.get(roomId);
+
+//        for (ClientSession session : sessions ) {
+//                session.Send(sendBuff.duplicate());
+//        }
+
+        for (ClientSession session : sessions ) {
+            if(session.socketChannel != super.socketChannel) {
+                session.Send(sendBuff.duplicate());
+            }
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 }

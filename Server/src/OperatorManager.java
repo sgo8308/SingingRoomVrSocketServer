@@ -70,7 +70,7 @@ public class OperatorManager {
 //        return newValue;
 //    }
 
-    private byte[] ChangeByteOrder(byte[] value ,int endian){
+    public byte[] ChangeByteOrder(byte[] value ,int endian){
         int idx = value.length;
         byte[] Temp = new byte[idx];
 
